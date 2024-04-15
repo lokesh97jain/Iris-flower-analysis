@@ -1,0 +1,103 @@
+---
+title: "Interactive Visualization"
+author: "Lokesh Surendra Jain"
+date: '2023-03-17'
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, results="hide", warning=F, message=F}
+library(data.table)
+library(dplyr)
+library(dplyr)
+library(tidyr)
+library(plotly)
+library(lubridate)
+```
+
+
+> "The Iris flower data set or Fisher's Iris data set is a multivariate
+> data set introduced by the British statistician and biologist Ronald
+> Fisher in his 1936 paper The use of multiple measurements in taxonomic
+> problems as an example of linear discriminant analysis"
+> <https://en.wikipedia.org/wiki/Iris_flower_data_set>
+
+```{r}
+iris_data <- fread("C:/Users/lokes/Downloads/iris.csv", stringsAsFactors = TRUE)
+# iris_data
+```
+
+```{r}
+iris_data
+```
+
+```{r}
+
+plot_ly(iris_data, x = ~Sepal.Length, color = ~Species, type = "histogram") %>%
+  layout(xaxis = list(title = "Sepal Length", tickvals = c(4, 5, 6, 7, 8)), yaxis = list(title = "Count"))
+```
+
+```{r}
+p <- ggplot(iris_data, aes(x = Sepal.Length, fill = Species)) +
+    geom_histogram(binwidth = 0.5, position = "dodge") +
+    labs(x = "Sepal Length", y = "Count")
+
+toWebGL(ggplotly(p))
+```
+
+```{r} 
+iris_long <- iris_data %>% gather(key = "metric", value = "value", -Species)
+
+ggplot(iris_long, aes(x = value, fill = Species)) +
+  geom_histogram(bins=30, binwidth = 0.5, position="dodge") +
+  facet_wrap(~metric, nrow = 2) +
+  labs(x = "value", y = "count")
+```
+
+The most effective species separations appear to be between petals'
+length and width. Each species' peak is clearly visible in the
+histograms for these measurements, with little overlap between them. The
+histograms for sepal length and sepal width, on the other hand, exhibit
+less distinct demarcation between the species and more overlap.
+
+```{r} 
+plot_ly(iris_long, x = ~ value, y = ~ interaction(Species, metric), color = ~ Species) %>%
+  add_boxplot()%>%
+  layout(title = "Metrics by Species",
+         xaxis = list(title = "Value"),
+         yaxis = list(title = "interaction(Species, metric)"),
+         facet_col = ~Species + metric)
+
+```
+
+```{r} 
+
+plot_ly(iris_data, x = ~Petal.Length, y = ~Petal.Width, color = ~Species, type = "scatter", mode = "markers", showlegend = TRUE) %>%
+  layout(title = "Iris Dataset: Petal Length vs. Petal Width",
+         xaxis = list(title = "Petal Length"),
+         yaxis = list(title = "Petal Width"),
+         legend = list(title = "Species") )
+
+```
+
+```{r} 
+plot_ly(iris_data, x = ~Petal.Length, y = ~Petal.Width, z = ~Sepal.Length,
+        color = ~Species, type = "scatter3d", mode = "markers")
+```
+
+We can observe from the scatter plot that there is a distinct division
+between the three species. The three species can clearly be seen
+clustering together in the Petal Length vs. Petal Width scatter plot,
+with Setosa forming a well-separated cluster and Versicolor and
+Virginica overlapping. This indicates that while Petal Length and Petal
+Width are useful measures for separating Setosa and the other two
+species, Versicolor and Virginica may not be as well-served by them. The
+Iris dataset is a suitable case study for investigating data
+visualization strategies, according to the scatter plot, as it amply
+highlights the value of utilizing various metrics to visualize data
+trends.
